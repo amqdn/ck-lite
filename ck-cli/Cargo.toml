@@ -1,5 +1,5 @@
 [package]
-name = "ck-search"
+name = "ck-lite"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -15,7 +15,7 @@ name = "ck"
 path = "src/main.rs"
 
 [lib]
-name = "ck_search"
+name = "ck_lite"
 path = "src/lib.rs"
 
 [dependencies]

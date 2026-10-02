@@ -1,6 +1,16 @@
-# ck
+# ck (`ck-lite`)
 
 Fast, lightweight regex code search tool with gitignore awareness.
+
+A fork of [`ck`](https://github.com/BeaconBay/ck), simplified to pure regex and literal search without machine learning or embedding runtimes.
+
+## Installation
+
+```bash
+cargo install ck-lite
+```
+
+This installs the `ck` binary.
 
 ## Features
 
@@ -36,6 +46,10 @@ ck --hidden "pattern" .
 # Bypass ignore files
 ck --no-ignore "pattern" .
 ```
+
+## Upstream
+
+`ck-lite` is a radical simplification of [BeaconBay/ck](https://github.com/BeaconBay/ck). Gratitude to original authors and contributors.
 
 ## License
 

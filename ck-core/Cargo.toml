@@ -5,9 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 rust-version.workspace = true
-description = "Core types and utilities for ck semantic search tool"
+description = "Core types and utilities for ck regex search"
 repository = "https://github.com/BeaconBay/ck"
-keywords = ["search", "semantic", "core"]
+keywords = ["search", "regex", "core"]
 categories = ["data-structures"]
 
 [dependencies]
@@ -15,10 +15,7 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-blake3 = { workspace = true }
 regex = { workspace = true }
-bincode = { workspace = true }
 
 [dev-dependencies]
-tempfile = "3.27"
-serial_test = "2.0"
+tempfile = { workspace = true }

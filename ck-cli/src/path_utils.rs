@@ -14,6 +14,7 @@ pub fn expand_glob_patterns(
     expand_glob_patterns_internal(paths, exclude_patterns, None)
 }
 
+#[allow(dead_code)]
 pub fn expand_glob_patterns_with_base(
     base_dir: &Path,
     paths: &[PathBuf],

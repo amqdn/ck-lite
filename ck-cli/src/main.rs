@@ -258,7 +258,18 @@ fn canonicalize_for_comparison(path: &Path) -> PathBuf {
     })
 }
 
+#[cfg(unix)]
+fn reset_sigpipe() {
+    unsafe {
+        libc::signal(libc::SIGPIPE, libc::SIG_DFL);
+    }
+}
+
+#[cfg(not(unix))]
+fn reset_sigpipe() {}
+
 fn main() -> Result<()> {
+    reset_sigpipe();
     let cli = Cli::parse();
 
     if cli.print_default_ckignore {

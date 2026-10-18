@@ -7,10 +7,6 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-pub fn search(options: &SearchOptions) -> Result<Vec<SearchResult>> {
-    regex_search(options)
-}
-
 pub fn regex_search(options: &SearchOptions) -> Result<Vec<SearchResult>> {
     let pattern = if options.fixed_string {
         regex::escape(&options.query)
@@ -122,8 +118,6 @@ fn search_file_in_memory(
                 preview,
                 lang: ck_core::Language::from_path(file_path),
                 symbol: None,
-                chunk_hash: None,
-                index_epoch: None,
             });
         } else {
             for mat in regex.find_iter(line) {
@@ -140,8 +134,6 @@ fn search_file_in_memory(
                     preview,
                     lang: ck_core::Language::from_path(file_path),
                     symbol: None,
-                    chunk_hash: None,
-                    index_epoch: None,
                 });
             }
         }
@@ -265,8 +257,6 @@ fn process_streaming_line(
             preview: line.to_string(),
             lang: ck_core::Language::from_path(file_path),
             symbol: None,
-            chunk_hash: None,
-            index_epoch: None,
         });
     } else {
         for mat in regex.find_iter(line) {
@@ -282,8 +272,6 @@ fn process_streaming_line(
                 preview: line.to_string(),
                 lang: ck_core::Language::from_path(file_path),
                 symbol: None,
-                chunk_hash: None,
-                index_epoch: None,
             });
         }
     }

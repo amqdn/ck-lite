@@ -222,11 +222,9 @@ fn build_options(cli: &Cli) -> SearchOptions {
     let exclude_patterns = ck_core::build_exclude_patterns(&cli.exclude, !cli.no_default_excludes);
 
     SearchOptions {
-        mode: ck_core::SearchMode::Regex,
         query: cli.pattern.clone().unwrap_or_default(),
         path: PathBuf::from("."),
         top_k: cli.top_k,
-        threshold: None,
         case_insensitive: cli.ignore_case,
         whole_word: cli.word_regexp,
         fixed_string: cli.fixed_strings,
@@ -238,7 +236,6 @@ fn build_options(cli: &Cli) -> SearchOptions {
         json_output: cli.json,
         jsonl_output: cli.jsonl,
         no_snippet: cli.no_snippet,
-        show_scores: false,
         show_filenames: false,
         files_with_matches: cli.files_with_matches,
         files_without_matches: cli.files_without_matches,

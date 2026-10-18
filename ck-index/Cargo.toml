@@ -14,9 +14,6 @@ categories = ["algorithms"]
 ck-core = { workspace = true }
 anyhow = { workspace = true }
 ignore = { workspace = true }
-rayon = { workspace = true }
-walkdir = { workspace = true }
-tracing = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

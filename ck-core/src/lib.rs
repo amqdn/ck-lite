@@ -189,13 +189,6 @@ impl Span {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FileMetadata {
-    pub path: PathBuf,
-    pub last_modified: u64,
-    pub size: u64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchResult {
     pub file: PathBuf,
     pub span: Span,
@@ -205,16 +198,6 @@ pub struct SearchResult {
     pub lang: Option<Language>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub chunk_hash: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub index_epoch: Option<u64>,
-}
-
-#[derive(Debug, Clone)]
-pub struct SearchResults {
-    pub matches: Vec<SearchResult>,
-    pub closest_below_threshold: Option<SearchResult>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -245,10 +228,6 @@ pub struct JsonlSearchResult {
     pub snippet: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub score: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub chunk_hash: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub index_epoch: Option<u64>,
 }
 
 impl JsonlSearchResult {
@@ -267,15 +246,8 @@ impl JsonlSearchResult {
             } else {
                 None
             },
-            chunk_hash: result.chunk_hash.clone(),
-            index_epoch: result.index_epoch,
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SearchMode {
-    Regex,
 }
 
 #[derive(Debug, Clone)]
@@ -316,11 +288,9 @@ impl From<&SearchOptions> for FileCollectionOptions {
 
 #[derive(Debug, Clone)]
 pub struct SearchOptions {
-    pub mode: SearchMode,
     pub query: String,
     pub path: PathBuf,
     pub top_k: Option<usize>,
-    pub threshold: Option<f32>,
     pub case_insensitive: bool,
     pub whole_word: bool,
     pub fixed_string: bool,
@@ -332,7 +302,6 @@ pub struct SearchOptions {
     pub json_output: bool,
     pub jsonl_output: bool,
     pub no_snippet: bool,
-    pub show_scores: bool,
     pub show_filenames: bool,
     pub files_with_matches: bool,
     pub files_without_matches: bool,
@@ -346,11 +315,9 @@ pub struct SearchOptions {
 impl Default for SearchOptions {
     fn default() -> Self {
         Self {
-            mode: SearchMode::Regex,
             query: String::new(),
             path: PathBuf::from("."),
             top_k: None,
-            threshold: None,
             case_insensitive: false,
             whole_word: false,
             fixed_string: false,
@@ -362,7 +329,6 @@ impl Default for SearchOptions {
             json_output: false,
             jsonl_output: false,
             no_snippet: false,
-            show_scores: false,
             show_filenames: false,
             files_with_matches: false,
             files_without_matches: false,
@@ -565,37 +531,6 @@ pub fn get_default_ckignore_content() -> &'static str {
 *.parquet
 *.arrow
 "
-}
-
-pub fn read_ckignore_patterns(repo_root: &Path) -> Result<Vec<String>> {
-    let ckignore_path = repo_root.join(".ckignore");
-
-    if !ckignore_path.exists() {
-        return Ok(Vec::new());
-    }
-
-    let content = std::fs::read_to_string(&ckignore_path).map_err(CkError::Io)?;
-
-    let patterns: Vec<String> = content
-        .lines()
-        .map(str::trim)
-        .filter(|line| !line.is_empty() && !line.starts_with('#'))
-        .map(std::string::ToString::to_string)
-        .collect();
-
-    Ok(patterns)
-}
-
-pub fn create_ckignore_if_missing(repo_root: &Path) -> Result<bool> {
-    let ckignore_path = repo_root.join(".ckignore");
-
-    if ckignore_path.exists() {
-        return Ok(false);
-    }
-
-    std::fs::write(&ckignore_path, get_default_ckignore_content()).map_err(CkError::Io)?;
-
-    Ok(true)
 }
 
 pub fn build_exclude_patterns(additional_excludes: &[String], use_defaults: bool) -> Vec<String> {

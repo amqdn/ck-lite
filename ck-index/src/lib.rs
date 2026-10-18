@@ -61,45 +61,32 @@ pub fn collect_files(
         return Ok(vec![path.to_path_buf()]);
     }
 
-    if options.respect_gitignore {
-        let overrides = build_overrides(path, &options.exclude_patterns)?;
-        let mut walker_builder = WalkBuilder::new(path);
-        walker_builder
-            .git_ignore(true)
-            .git_global(true)
-            .git_exclude(true)
-            .hidden(!options.show_hidden);
+    let gitignore_active = options.respect_gitignore && ck_core::has_gitignore(path);
 
-        if options.use_ckignore {
-            walker_builder.add_custom_ignore_filename(".ckignore");
-        }
-
-        walker_builder.overrides(overrides);
-        let walker = walker_builder.build();
-
-        Ok(filter_and_collect_files(walker))
+    let overrides = if gitignore_active {
+        build_overrides(path, &options.exclude_patterns)?
     } else {
-        use ck_core::get_default_exclude_patterns;
-        let mut all_patterns = get_default_exclude_patterns();
+        let mut all_patterns = ck_core::get_gitignore_fallback_patterns();
         all_patterns.extend(options.exclude_patterns.iter().cloned());
-        let combined_overrides = build_overrides(path, &all_patterns)?;
+        build_overrides(path, &all_patterns)?
+    };
 
-        let mut walker_builder = WalkBuilder::new(path);
-        walker_builder
-            .git_ignore(false)
-            .git_global(false)
-            .git_exclude(false)
-            .hidden(!options.show_hidden);
+    let mut walker_builder = WalkBuilder::new(path);
+    walker_builder
+        .git_ignore(gitignore_active)
+        .git_global(gitignore_active)
+        .git_exclude(gitignore_active)
+        .require_git(false)
+        .hidden(!options.show_hidden);
 
-        if options.use_ckignore {
-            walker_builder.add_custom_ignore_filename(".ckignore");
-        }
-
-        walker_builder.overrides(combined_overrides);
-        let walker = walker_builder.build();
-
-        Ok(filter_and_collect_files(walker))
+    if options.use_ckignore {
+        walker_builder.add_custom_ignore_filename(".ckignore");
     }
+
+    walker_builder.overrides(overrides);
+    let walker = walker_builder.build();
+
+    Ok(filter_and_collect_files(walker))
 }
 
 #[cfg(test)]
@@ -162,5 +149,39 @@ mod tests {
         let mut expected = vec![file_a, file_b];
         expected.sort();
         assert_eq!(collected, expected);
+    }
+
+    #[test]
+    fn test_collect_files_uses_fallback_when_no_gitignore() {
+        let temp_dir = TempDir::new().unwrap();
+        let nm_dir = temp_dir.path().join("node_modules");
+        fs::create_dir(&nm_dir).unwrap();
+        fs::write(nm_dir.join("pkg.js"), "module.exports = 1;").unwrap();
+        let src_file = temp_dir.path().join("main.rs");
+        fs::write(&src_file, "fn main() {}").unwrap();
+
+        let options = ck_core::FileCollectionOptions::default();
+        let collected = collect_files(temp_dir.path(), &options).unwrap();
+        assert_eq!(collected, vec![src_file]);
+    }
+
+    #[test]
+    fn test_collect_files_uses_gitignore_when_present() {
+        let temp_dir = TempDir::new().unwrap();
+        fs::write(temp_dir.path().join(".gitignore"), "custom_build/\n").unwrap();
+        let custom_dir = temp_dir.path().join("custom_build");
+        fs::create_dir(&custom_dir).unwrap();
+        fs::write(custom_dir.join("artifact.txt"), "built").unwrap();
+        let json_file = temp_dir.path().join("data.json");
+        fs::write(&json_file, "{\"a\": 1}").unwrap();
+        let src_file = temp_dir.path().join("main.rs");
+        fs::write(&src_file, "fn main() {}").unwrap();
+
+        let options = ck_core::FileCollectionOptions {
+            exclude_patterns: ck_core::get_default_exclude_patterns(),
+            ..Default::default()
+        };
+        let collected = collect_files(temp_dir.path(), &options).unwrap();
+        assert_eq!(collected, vec![src_file]);
     }
 }

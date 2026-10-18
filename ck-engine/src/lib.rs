@@ -36,7 +36,11 @@ pub fn regex_search(options: &SearchOptions) -> Result<Vec<SearchResult>> {
         let collected = ck_index::collect_files(&options.path, &file_options)?;
         filter_files_by_include(collected, &options.include_patterns)
     } else {
-        let collected = collect_files(&options.path, should_recurse, &options.exclude_patterns)?;
+        let mut exclude_patterns = options.exclude_patterns.clone();
+        if !(options.respect_gitignore && ck_core::has_gitignore(&options.path)) {
+            exclude_patterns.extend(ck_core::get_gitignore_fallback_patterns());
+        }
+        let collected = collect_files(&options.path, should_recurse, &exclude_patterns)?;
         filter_files_by_include(collected, &options.include_patterns)
     };
 

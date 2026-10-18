@@ -377,12 +377,59 @@ impl Default for SearchOptions {
 
 pub fn get_default_exclude_patterns() -> Vec<String> {
     vec![
+        // VCS metadata
         ".git".to_string(),
         ".svn".to_string(),
         ".hg".to_string(),
+        // Vendored and snapshot directories often committed to git
+        "vendor".to_string(),
+        "third_party".to_string(),
+        "snapshots".to_string(),
+        "__snapshots__".to_string(),
+        // Lockfiles
+        "*.lock".to_string(),
+        "package-lock.json".to_string(),
+        "pnpm-lock.yaml".to_string(),
+        "bun.lockb".to_string(),
+        "go.sum".to_string(),
+        // Structured data, dumps, and test snapshots
+        "*.json".to_string(),
+        "*.jsonl".to_string(),
+        "*.ndjson".to_string(),
+        "*.csv".to_string(),
+        "*.tsv".to_string(),
+        "*.xml".to_string(),
+        "*.sql".to_string(),
+        "*.snap".to_string(),
+        "*.har".to_string(),
+        // Minified, bundled, sourcemap, and generated code
+        "*.min.js".to_string(),
+        "*.min.css".to_string(),
+        "*.bundle.js".to_string(),
+        "*.chunk.js".to_string(),
+        "*.map".to_string(),
+        "*.pb.go".to_string(),
+        "*_pb2.py".to_string(),
+        "*.generated.*".to_string(),
+        "*.g.dart".to_string(),
+        // Non-code assets and fonts
+        "*.svg".to_string(),
+        "*.woff".to_string(),
+        "*.woff2".to_string(),
+        "*.ttf".to_string(),
+        "*.eot".to_string(),
+        "*.otf".to_string(),
+        "*.pdf".to_string(),
+        "*.wasm".to_string(),
+    ]
+}
+
+pub fn get_gitignore_fallback_patterns() -> Vec<String> {
+    vec![
         "target".to_string(),
         "build".to_string(),
         "dist".to_string(),
+        "out".to_string(),
         "node_modules".to_string(),
         ".gradle".to_string(),
         ".mvn".to_string(),
@@ -393,13 +440,70 @@ pub fn get_default_exclude_patterns() -> Vec<String> {
         "env".to_string(),
         ".env".to_string(),
         "__pycache__".to_string(),
+        ".pytest_cache".to_string(),
+        ".mypy_cache".to_string(),
+        ".ruff_cache".to_string(),
+        ".tox".to_string(),
+        ".next".to_string(),
+        ".nuxt".to_string(),
+        ".svelte-kit".to_string(),
+        ".turbo".to_string(),
+        ".parcel-cache".to_string(),
+        ".cache".to_string(),
+        "coverage".to_string(),
+        ".nyc_output".to_string(),
+        "htmlcov".to_string(),
+        "Pods".to_string(),
+        ".terraform".to_string(),
+        ".direnv".to_string(),
         ".vscode".to_string(),
         ".idea".to_string(),
         ".eclipse".to_string(),
         "tmp".to_string(),
         "temp".to_string(),
         ".tmp".to_string(),
+        "*.log".to_string(),
+        "*.pyc".to_string(),
+        "*.o".to_string(),
+        "*.so".to_string(),
+        "*.dylib".to_string(),
+        "*.exe".to_string(),
     ]
+}
+
+pub fn has_gitignore(path: &Path) -> bool {
+    let start_dir = if path.is_file() {
+        path.parent().unwrap_or(path)
+    } else {
+        path
+    };
+
+    let resolved = start_dir.canonicalize().unwrap_or_else(|_| {
+        std::env::current_dir()
+            .map(|cwd| cwd.join(start_dir))
+            .unwrap_or_else(|_| start_dir.to_path_buf())
+    });
+
+    if resolved.join(".gitignore").is_file() {
+        return true;
+    }
+
+    let git_root = resolved
+        .ancestors()
+        .find(|dir| dir.join(".git").exists());
+
+    if let Some(root) = git_root {
+        for dir in resolved.ancestors() {
+            if dir.join(".gitignore").is_file() {
+                return true;
+            }
+            if dir == root {
+                break;
+            }
+        }
+    }
+
+    false
 }
 
 pub fn get_default_ckignore_content() -> &'static str {
@@ -541,6 +645,14 @@ mod tests {
         let combined = build_exclude_patterns(&excludes, true);
         assert!(combined.contains(&"custom_dir".to_string()));
         assert!(combined.contains(&".git".to_string()));
+        assert!(combined.contains(&"*.json".to_string()));
+        assert!(combined.contains(&"*.lock".to_string()));
+        assert!(!combined.contains(&"node_modules".to_string()));
+
+        let fallback = get_gitignore_fallback_patterns();
+        assert!(fallback.contains(&"node_modules".to_string()));
+        assert!(fallback.contains(&"target".to_string()));
+        assert!(fallback.contains(&"*.log".to_string()));
 
         let without_defaults = build_exclude_patterns(&excludes, false);
         assert_eq!(without_defaults, vec!["custom_dir".to_string()]);

@@ -7,7 +7,11 @@ A fork of [`ck`](https://github.com/BeaconBay/ck), simplified to pure regex and 
 ## Installation
 
 ```bash
-cargo install ck-lite
+# Install from GitHub
+cargo install --git https://github.com/amqdn/ck-lite
+
+# Or install from local checkout
+cargo install --path ck-cli
 ```
 
 This installs the `ck` binary.

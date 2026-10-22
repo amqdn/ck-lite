@@ -5,8 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 rust-version.workspace = true
+publish = false
 description = "Fast, lightweight regex grep tool with gitignore awareness"
-repository = "https://github.com/BeaconBay/ck"
+repository.workspace = true
 keywords = ["grep", "search", "regex", "code", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 

@@ -11,7 +11,7 @@ use path_utils::{build_include_patterns, expand_glob_patterns};
 #[derive(Parser)]
 #[command(name = "ck")]
 #[command(about = "Fast, lightweight regex grep with gitignore awareness")]
-#[command(version)]
+#[command(version = env!("CK_VERSION"))]
 struct Cli {
     #[arg(help = "Search pattern (regex)")]
     pattern: Option<String>,

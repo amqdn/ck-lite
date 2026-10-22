@@ -5,8 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 rust-version.workspace = true
+publish = false
 description = "Ignore-aware file discovery for ck regex search"
-repository = "https://github.com/BeaconBay/ck"
+repository.workspace = true
 keywords = ["indexing", "search", "traversal"]
 categories = ["algorithms"]
 

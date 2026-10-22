@@ -5,8 +5,9 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 rust-version.workspace = true
+publish = false
 description = "Core types and utilities for ck regex search"
-repository = "https://github.com/BeaconBay/ck"
+repository.workspace = true
 keywords = ["search", "regex", "core"]
 categories = ["data-structures"]
 

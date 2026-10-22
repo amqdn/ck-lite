@@ -8,17 +8,17 @@ members = [
 ]
 
 [workspace.package]
-version = "0.7.11"
+version = "0.1.0"
 edition = "2024"
 authors = ["Mike Renwick"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/BeaconBay/ck"
+repository = "https://github.com/amqdn/ck-lite"
 rust-version = "1.88.0"
 
 [workspace.dependencies]
-ck-core = { path = "ck-core", version = "0.7.11" }
-ck-index = { path = "ck-index", version = "0.7.11" }
-ck-engine = { path = "ck-engine", version = "0.7.11" }
+ck-core = { path = "ck-core" }
+ck-index = { path = "ck-index" }
+ck-engine = { path = "ck-engine" }
 
 anyhow = "1.0"
 thiserror = "1.0"
